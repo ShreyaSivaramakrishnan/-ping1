@@ -1,0 +1,176 @@
+# Ask the user for their name
+user_name = input("Please enter your name: ")
+
+print(f"Hello, {user_name}! Welcome to Maze of Symbols !")
+
+print("Use arrow keys to navigate the grid to the top right corner without touching 'Y' "
+          "while passing through a minimum of 10 'X' to Win.")
+
+import random
+import keyboard  # Import the keyboard library
+
+# ANSI escape codes for colors
+RED = '\033[91m'
+GREEN = '\033[92m'
+RESET = '\033[0m'  # Resets the color to default
+
+def initialize_game():
+    # Initialize the grid
+    size = 5  # Grid size
+    grid = [['X' for _ in range(size)] for _ in range(size)]
+
+    # Randomly place 'Y' symbols, avoiding the top right corner
+    for _ in range(int(size * 1.5)):
+        while True:
+            x, y = random.randint(0, size - 1), random.randint(0, size - 1)
+            if (x, y) != (0, size - 1):  # Avoid the top right corner
+                grid[x][y] = 'Y'
+                break
+
+    # Player's starting position at the bottom row
+    player_pos = [size - 1, random.randint(0, size - 1)]
+
+    # Counter for 'X' cells passed and set for visited 'X' cells
+    x_passed = 0
+    visited_x = set()
+
+    return size, grid, player_pos, x_passed, visited_x
+
+size, grid, player_pos, x_passed, visited_x = initialize_game()
+
+
+def generate_winnable_path(start_pos, goal_pos, size, required_x):
+    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    path = [start_pos]
+    x_count = 0
+
+    while not (len(path) > required_x and path[-1] == goal_pos):
+        if x_count < required_x:
+            possible_moves = []
+            for d in directions:
+                next_pos = (path[-1][0] + d[0], path[-1][1] + d[1])
+                if 0 <= next_pos[0] < size and 0 <= next_pos[1] < size and next_pos not in path:
+                    possible_moves.append(next_pos)
+
+            if possible_moves:
+                next_move = random.choice(possible_moves)
+                path.append(next_move)
+                x_count += 1
+            else:
+                path.pop()
+                x_count = len(path) - 1
+        else:
+            if path[-1][0] > goal_pos[0]:
+                next_move = (path[-1][0] - 1, path[-1][1])
+                if next_move not in path:
+                    path.append(next_move)
+            elif path[-1][1] < goal_pos[1]:
+                next_move = (path[-1][0], path[-1][1] + 1)
+                if next_move not in path:
+                    path.append(next_move)
+
+    return path
+
+def initialize_game():
+    size = 5
+    grid = [['' for _ in range(size)] for _ in range(size)]  # Grid initialized with empty strings
+    
+    start_pos = (size - 1, random.randint(0, size - 2))
+    goal_pos = (0, size - 1)
+    winnable_path = generate_winnable_path(start_pos, goal_pos, size, 10)
+    
+    # Set 'X's for the winnable path
+    for x, y in winnable_path:
+        grid[x][y] = 'X'
+    
+    # Randomly place 'Y' symbols
+    for _ in range(int(size * 1.5)):
+        while True:
+            x, y = random.randint(0, size - 1), random.randint(0, size - 1)
+            if (x, y) != (0, size - 1) and (x, y) not in winnable_path and grid[x][y] == '':
+                grid[x][y] = 'Y'
+                break
+
+    # Adjusted for a valid starting position and avoiding 'Y' placement at start
+    player_pos = list(start_pos)
+    x_passed = 0
+    visited_x = set()
+
+    return size, grid, player_pos, x_passed, visited_x
+
+def print_grid():
+    print('\n' * 2)  # Print extra newlines for spacing between grid outputs
+    for i in range(size):
+        for j in range(size):
+            cell = grid[i][j]
+            if [i, j] == player_pos:
+                print('P', end=' ')
+            elif cell == 'Y':
+                print(f"{RED}{cell}{RESET}", end=' ')
+            elif cell == 'X':
+                print(f"{GREEN}{cell}{RESET}", end=' ')
+        print()
+    print('\n')  # Optional: Additional newline for spacing after the grid
+
+def move_player(direction):
+    global player_pos, x_passed, grid, size, visited_x
+    new_pos = player_pos[:]
+    if direction == 'up' and player_pos[0] > 0:
+        new_pos[0] -= 1
+    elif direction == 'down' and player_pos[0] < size - 1:
+        new_pos[0] += 1
+    elif direction == 'left' and player_pos[1] > 0:
+        new_pos[1] -= 1
+    elif direction == 'right' and player_pos[1] < size - 1:
+        new_pos[1] += 1
+    else:
+        print("Can't move in that direction")
+        return
+
+    # Ending the game if player touches 'Y' or revisits 'X'
+    if grid[new_pos[0]][new_pos[1]] == 'Y' or tuple(new_pos) in visited_x:
+        print("Game Over! You've touched a 'Y' or revisited an 'X'.")
+        exit()
+
+    if grid[new_pos[0]][new_pos[1]] == 'X':
+        visited_x.add(tuple(new_pos))
+        x_passed += 1
+
+    player_pos = new_pos
+    check_game_status()
+
+def check_game_status():
+    if player_pos == [0, size - 1]:
+        if x_passed < 10:
+            print(f" You lost ! by only passing through {x_passed} 'X' cells")
+            
+        else:
+            print("Congratulations! You've reached the top right corner and won the game!")
+            exit()
+    else:
+        print_grid()
+
+# Key press event handlers
+def on_up():
+    move_player('up')
+
+def on_down():
+    move_player('down')
+
+def on_left():
+    move_player('left')
+
+def on_right():
+    move_player('right')
+
+# Hooking the arrow keys
+keyboard.on_press_key("up", lambda _: on_up())
+keyboard.on_press_key("down", lambda _: on_down())
+keyboard.on_press_key("left", lambda _: on_left())
+keyboard.on_press_key("right", lambda _: on_right())
+
+print_grid()  # Initial grid print
+
+# Main loop
+while True:
+    pass  # The loop remains empty; game logic is handled via key press events

@@ -1,0 +1,80 @@
+import random
+import keyboard  # Import the keyboard library
+
+# Initialize the grid
+size = 5  # Grid size
+grid = [['X' for _ in range(size)] for _ in range(size)]
+
+# Randomly place 'Y' symbols, avoiding the top right corner
+for _ in range(int(size * 1.5)):
+    while True:
+        x, y = random.randint(0, size - 1), random.randint(0, size - 1)
+        if (x, y) != (0, size - 1):  # Avoid the top right corner
+            grid[x][y] = 'Y'
+            break
+
+# Player's starting position at the bottom row
+player_pos = [size - 1, random.randint(0, size - 1)]
+
+# Counter for 'X' cells passed and set for visited 'X' cells
+x_passed = 0
+visited_x = set()
+
+def print_grid():
+    print('\n' * 2)  # Print extra newlines for spacing between grid outputs
+    for i in range(size):
+        for j in range(size):
+            cell = 'P' if [i, j] == player_pos else grid[i][j]
+            print(cell, end=' ')
+        print()
+    print('\n')  # Optional: Additional newline for spacing after the grid
+
+def move_player(direction):
+    global player_pos, x_passed
+    new_pos = player_pos[:]
+    if direction == 'up' and player_pos[0] > 0:
+        new_pos[0] -= 1
+    elif direction == 'down' and player_pos[0] < size - 1:
+        new_pos[0] += 1
+    elif direction == 'left' and player_pos[1] > 0:
+        new_pos[1] -= 1
+    elif direction == 'right' and player_pos[1] < size - 1:
+        new_pos[1] += 1
+    else:
+        print("Can't move in that direction")
+        return
+
+    if grid[new_pos[0]][new_pos[1]] == 'X':
+        if tuple(new_pos) in visited_x:
+            print("Game Over! You've already passed through this 'X' cell.")
+            exit()
+        visited_x.add(tuple(new_pos))
+        x_passed += 1
+    player_pos = new_pos
+    print_grid()  # Print the grid after each move
+
+# Key press event handlers
+def on_up():
+    move_player('up')
+
+def on_down():
+    move_player('down')
+
+def on_left():
+    move_player('left')
+
+def on_right():
+    move_player('right')
+
+# Hooking the arrow keys
+keyboard.on_press_key("up", lambda _: on_up())
+keyboard.on_press_key("down", lambda _: on_down())
+keyboard.on_press_key("left", lambda _: on_left())
+keyboard.on_press_key("right", lambda _: on_right())
+
+print_grid()  # Initial grid print
+
+# Main loop
+while True:
+    # The loop remains empty; game logic is handled via key press events
+    pass

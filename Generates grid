@@ -1,0 +1,40 @@
+import random
+
+# ANSI escape codes for colors
+GREEN = '\033[92m'  # Green text
+RED = '\033[91m'   # Red text
+RESET = '\033[0m'  # Reset to default
+
+# Function to print the grid with colored symbols
+def print_grid(grid):
+    for row in grid:
+        row_str = ''
+        for cell in row:
+            if cell == 'X':
+                row_str += GREEN + cell + RESET + ' '
+            elif cell == 'Y':
+                row_str += RED + cell + RESET + ' '
+            else:
+                row_str += cell + ' '
+        print(row_str)
+
+# Initialize a 5x5 grid with '.'
+grid = [['.' for _ in range(5)] for _ in range(5)]
+
+# Excluding bottom left (4, 0) and top right (0, 4) cells
+excluded_positions = [(4, 0), (0, 4)]
+available_positions = [(row, col) for row in range(5) for col in range(5) if (row, col) not in excluded_positions]
+
+# Randomly select 20 unique positions from available positions
+selected_positions = random.sample(available_positions, 20)
+
+# Assign 'X' to the first 15 selected positions
+for row, col in selected_positions[:15]:
+    grid[row][col] = 'X'
+
+# Assign 'Y' to the last 5 selected positions
+for row, col in selected_positions[15:]:
+    grid[row][col] = 'Y'
+
+# Print the resulting grid
+print_grid(grid)

@@ -1,0 +1,64 @@
+import random
+
+# Initialize the grid
+size = 5  # Grid size
+grid = [['X' for _ in range(size)] for _ in range(size)]
+
+# Randomly place 'Y' symbols, avoiding the top right corner
+for _ in range(int(size * 1.5)):  # Adjust density of 'Y's here
+    while True:
+        x, y = random.randint(0, size-1), random.randint(0, size-1)
+        if (x, y) != (0, size-1):  # Avoid the top right corner
+            grid[x][y] = 'Y'
+            break
+
+# Player's starting position at the bottom row
+player_pos = [size-1, random.randint(0, size-1)]  # Start at bottom row
+
+# Counter for 'X' cells passed and set for visited 'X' cells
+x_passed = 0
+visited_x = set()
+
+def print_grid():
+    for i in range(size):
+        for j in range(size):
+            cell = 'P' if [i, j] == player_pos else grid[i][j]
+            print(cell, end=' ')
+        print()
+
+def move_player(direction):
+    global player_pos, x_passed
+    new_pos = player_pos[:]
+    if direction == 'up' and player_pos[0] > 0:
+        new_pos[0] -= 1
+    elif direction == 'down' and player_pos[0] < size-1:
+        new_pos[0] += 1
+    elif direction == 'left' and player_pos[1] > 0:
+        new_pos[1] -= 1
+    elif direction == 'right' and player_pos[1] < size-1:
+        new_pos[1] += 1
+    else:
+        print("Can't move in that direction")
+        return
+
+    # Check if moving to a cell containing 'X'
+    if grid[new_pos[0]][new_pos[1]] == 'X':
+        if tuple(new_pos) in visited_x:
+            print("Game Over! You've already passed through this 'X' cell.")
+            exit()
+        visited_x.add(tuple(new_pos))
+        x_passed += 1
+    player_pos = new_pos
+
+# Game loop
+while True:
+    print_grid()
+    direction = input("Move (up, down, left, right): ").lower()
+    move_player(direction)
+    
+    # Check if player reached the top right corner with at least 10 'X's passed
+    if player_pos == [0, size-1] and x_passed >= 10:
+        print("Congratulations! You've reached the top right corner and won the game!")
+        break
+    elif player_pos == [0, size-1]:
+        print(f"You've reached the top right corner but only passed through {x_passed} 'X' cells. You need at least 10 to win.")

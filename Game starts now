@@ -1,0 +1,13 @@
+# Ask the user for their name
+user_name = input("Please enter your name: ")
+
+# Ask the user for their age
+user_age = input("Please enter your age: ")
+
+# Ensure the age is a number before converting
+if user_age.isdigit():
+    user_age = int(user_age)
+    # Print a greeting message including the user's name and age
+    print(f"Hello, {user_name}! Welcome to Maze of Symbols !")
+else:
+    print("The age entered is not a valid number.")

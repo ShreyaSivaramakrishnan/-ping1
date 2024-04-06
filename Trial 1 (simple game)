@@ -1,0 +1,49 @@
+import random
+
+# Initialize the grid
+size = 5  # Grid size
+grid = [['X' for _ in range(size)] for _ in range(size)]
+
+# Randomly place 'Y' symbols
+for _ in range(int(size*1.5)):  # Adjust density of 'Y's here
+    x, y = random.randint(0, size-1), random.randint(0, size-1)
+    grid[x][y] = 'Y'
+
+# Player's starting position
+player_pos = [size-1, random.randint(0, size-1)]  # Start at bottom row
+
+def print_grid():
+    for i in range(size):
+        for j in range(size):
+            if [i, j] == player_pos:
+                print('P', end=' ')
+            else:
+                print(grid[i][j], end=' ')
+        print()
+
+def move_player(direction):
+    global player_pos
+    if direction == 'u' and player_pos[0] > 0:
+        player_pos[0] -= 1
+    elif direction == 'd' and player_pos[0] < size-1:
+        player_pos[0] += 1
+    elif direction == 'l' and player_pos[1] > 0:
+        player_pos[1] -= 1
+    elif direction == 'r' and player_pos[1] < size-1:
+        player_pos[1] += 1
+    else:
+        print("Can't move in that direction")
+
+# Game loop
+while True:
+    print_grid()
+    direction = input("Move (up, down, left, right): ").lower()
+    move_player(direction)
+    
+    # Check for game-ending conditions
+    if player_pos[0] == 0:
+        print("Congratulations! You've reached the top!")
+        break
+    elif grid[player_pos[0]][player_pos[1]] == 'Y':
+        print("Game Over! You touched 'Y'.")
+        break
